@@ -121,6 +121,14 @@ class Octree {
             root = read(0);
         }
 
+
+        void rebuild(vector<Node> &nodos)
+        {
+            
+        }
+
+
+
     public:
         Octree(const char* nodesfile) {
             read_root();
@@ -129,10 +137,17 @@ class Octree {
             oct_file = nodesfile;
             build(fnames);
         }
+        void get(int A,int B,int C,int D)
+        {
+            vector<Node> nodos;
+            root.find_nodes(A,B,C,D,nodos);
+            rebuild(nodos);
+        }
 };
 
 int main(){
     Octree oc("octree","files.txt");
     Octree oc2("octree");
+    oc2.get(0,0,1,0);
     return 0;
 }
