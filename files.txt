@@ -1,0 +1,3 @@
+p1.BMP
+p2.BMP
+p3.BMP
