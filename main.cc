@@ -46,16 +46,18 @@ int main(){
 //  v_img.push_back(CImg<float>("p3.BMP"));
 
 
-    // Octree oc("octree.dat","files.txt");
+   // Octree oc("octreeback.dat","files.txt");
+	Octree oc("octree.dat","texto.txt");
 
 
 
 
 
-    Octree oc2("octree.dat");
-    //oc2.get(4.0/512,0,1,-3);
-    oc2.get(0,0,1,0);
-    
+// Octree oc2("octree.dat");
+  // Octree oc2("octree-600.dat");
+// oc2.get(7.0/512,0,1,-40);
+  // oc2.get(0,0,1,-1);
+
     // ifstream f("texto.txt");
     // while(!f.eof())
     // {

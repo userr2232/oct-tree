@@ -119,7 +119,9 @@ class Octree {
 
         }
 
-        void find_nodes(Node& cur,float A,float B,float C,float D,vector<CImg<float>>& img)
+       void find_nodes(Node& cur,float A,float B,float C,float D,CImg<float>& img)
+        // void find_nodes(Node& cur,float A,float B,float C,float D,CImg<float>& img)
+
         {
             double x1=cur.x1;
             double x2=cur.x2;
@@ -129,24 +131,6 @@ class Octree {
             double z2=cur.z2;
 
             //cout<<x1<<" "<<y1<<" "<<z1<<" "<<x2<<" "<<y2<<" "<<z2<<" "<<cur.c<<endl;
-            if(cur.c!=-1)
-            {
-                
-                
-              for(int i=x1;i<x2;i++)
-              {
-                for(int j=y1;j<y2;j++)
-                {
-                        for(int k=z1;k<z2;k++)
-                        {
-                            img[k](i,j)=cur.c;
-                        }
-                }
-
-              }
-              
-              return;
-            }
 
             vector<pair<Point,Point>> points;
             points.push_back(make_pair(Point{x1,y1,z1},Point{x2,y2,z2}));
@@ -157,7 +141,7 @@ class Octree {
             bool r=0;
             for(auto i:points )
             {
-            
+
               auto [p1,p2]=i;
               //cout<<(A*p1.x+B*p1.y+C*p1.z+D)*(A*p2.x+B*p2.y+C*p2.z+D)<<endl;
               if((A*p1.x+B*p1.y+C*p1.z+D)*(A*p2.x+B*p2.y+C*p2.z+D)<=0)
@@ -169,6 +153,22 @@ class Octree {
 
 
             if(!r) return;
+
+
+
+            if(cur.c!=-1 )
+            {
+              if(z1==z2)return;
+              for(int i=x1;i<x2;i++)
+              {
+                for(int j=y1;j<y2;j++)
+                {
+                     img(i,j)=cur.c;
+                }
+              }
+              return;
+            }
+
 
             for(int i=0;i<8;i++)
             {
@@ -194,14 +194,37 @@ class Octree {
         {
             CImg<float> b("p1.BMP");
             CImg<float>img(b.width(),b.height());
-            vector<CImg<float>>imgs{img,img,img};      
+            vector<CImg<float>>imgs;
+
+            for(int i=0;i<41;i++)
+            {
+                imgs.push_back(img);
+            }
+
             root=read(0);
             //cout<<b.width()<<" "<<b.height();
-            find_nodes(root,A,B,C,D,imgs);
-            imgs[0].save("Result1.BMP");
-            imgs[1].save("Result2.BMP");
-            imgs[2].save("Result3.BMP");
+            find_nodes(root,A,B,C,D,img);
+            // imgs[0].save("Result1.BMP");
+            // imgs[1].save("Result2.BMP");
+            // imgs[2].save("Result3.BMP");
 
+            // /*
+            for(auto im:imgs)
+            {
+                for(int i=0;i<im.width();i++)
+                {
+                    for(int j=0;j<im.height();j++)
+                    {
+                        if(im(i,j)!=0)
+                        {
+                            img(i,j)=im(i,j);
+                        }
+                    }
+
+                }
+            }
+            // */
+            img.save("prueba.BMP");
 
         }
 };
@@ -232,7 +255,7 @@ void go(Node n, vector<CImg<float>>& v)
         for(int i=0;i<8;i++)
         go(read(n.children[i]),v);
     }
-    
+
 
 }
 
