@@ -26,7 +26,7 @@ void read(double A, double B, double C, double D)
       for(int k=0;k<v_img.size();k++)
       {
         // cout<<A*i+B*j+C*k<<endl;
-        if(abs(A*i+B*j+C*k+D<=0.5))
+        if(abs(A*i+B*j+C*k+D)<=0.5)
        // if(abs(A*i+B*j+C*k+D==0))
 
         {
@@ -47,16 +47,16 @@ int main(){
 
 
    // Octree oc("octreeback.dat","files.txt");
-	Octree oc("octree.dat","texto.txt");
+	// Octree oc("octree.dat","texto.txt");
 
 
 
 
 
-// Octree oc2("octree.dat");
-  // Octree oc2("octree-600.dat");
-// oc2.get(7.0/512,0,1,-40);
-  // oc2.get(0,0,1,-1);
+Octree oc2("octree.dat");
+// oc2.get(40.0/512,0,1,-40);
+  oc2.get(0,0,1,-1);
+  // oc2.get(0,0,1,-12);
 
     // ifstream f("texto.txt");
     // while(!f.eof())

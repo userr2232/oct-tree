@@ -163,7 +163,12 @@ class Octree {
               {
                 for(int j=y1;j<y2;j++)
                 {
-                     img(i,j)=cur.c;
+                  for(int k=z1;k<z2;k++)
+                  {
+                    if(abs(A*i+B*j+C*k+D)<1)
+                    img(i,j)=cur.c;
+                  }
+
                 }
               }
               return;
