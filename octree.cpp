@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <cmath>
+
 class Octree {
     private:
         string oct_file;
@@ -113,16 +116,26 @@ class Octree {
             root = read(0);
         }
 
-
-        void rebuild(vector<Node> &nodos)
-        {
-
+        double solve_y(double A, double B, double C, double D, double x, double z) {
+            return (D - A*x - C*z) / B;
         }
 
-       void find_nodes(Node& cur,float A,float B,float C,float D,vector<CImg<float>>& img)
-        // void find_nodes(Node& cur,float A,float B,float C,float D,CImg<float>& img)
+        pair<Point, Point> get_two_points_yz(Node& cur, float A, float B, float C, float D) {
+            double x2{cur.x2}, x1{cur.x1}, y1{cur.y1}, y2{cur.y2}, z1{cur.z1}, z2{cur.z2};
+            pair<Point, Point> v = {
+                    {x2, solve_y(A, B, C, D, cur.x2, cur.z2), z2},
+                    {x2, solve_y(A, B, C, D, x2, z1), z1}
+            };
+            return v;
+        }
 
-        {
+        void find_nodes(Node& cur, float A, float B, float C, float D, CImg<float>& img) {
+            auto [p1, p2] = get_two_points_yz(cur, A, B, C, D);
+            find_nodes(cur, A, B, C, D, img, p1, p2);
+        }
+
+       void find_nodes(Node& cur,float A,float B,float C,float D, CImg<float>& img, Point p, Point q)
+       {
             double x1=cur.x1;
             double x2=cur.x2;
             double y1=cur.y1;
@@ -154,55 +167,76 @@ class Octree {
 
             if(!r) return;
 
-
-
             if(cur.c!=-1 )
             {
+                //plano xz
+                if(y1==y2)return;
+                if(abs(A) < 0.05 && abs(C) < 0.05){
+
+                    for(int i=x1;i<x2;i++)
+                    {
+                        for(int j=y1;j<y2;j++)
+                        {
+                            for(int k=z1;k<z2;k++)
+                            {
+                                if(abs(A*i+B*j+C*k+D)<1)
+                                    img(i,img.height()-1-k)=cur.c;
+                            }
+
+                        }
+                    }
+                }
+
               //plano xy
               if(z1==z2)return;
-              for(int i=x1;i<x2;i++)
-              {
-                for(int j=y1;j<y2;j++)
-                {
-                  for(int k=z1;k<z2;k++)
+              if(abs(A) < 0.05 && abs(B) < 0.05) {
+                  for(int i=x1;i<x2;i++)
                   {
-                    if(abs(A*i+B*j+C*k+D)<1)
-                    img[0](i,j)=cur.c;
-                  }
+                      for(int j=y1;j<y2;j++)
+                      {
+                          for(int k=z1;k<z2;k++)
+                          {
+                              if(abs(A*i+B*j+C*k+D)<1)
+                                  img(i,j)=cur.c;
+                          }
 
-                }
+                      }
+                  }
+                  return;
               }
 
-              //plano yz
-              if(x1==x2)return;
-              for(int i=x1;i<x2;i++)
-              {
-                for(int j=y1;j<y2;j++)
-                {
-                  for(int k=z1;k<z2;k++)
-                  {
-                    if(abs(A*i+B*j+C*k+D)<1)
-                    img[1](j,img[1].height()-1-k)=cur.c;
-                  }
-
+//              //plano yz
+                if(x1 == x2) return;
+                if(abs(B) < 0.05 && abs(C) < 0.05) {
+                    for(int i = x1; i < x2; ++i)
+                        for(int j = y1; j < y2; ++j) {
+                            for(int k = z1; k < z2; ++k) {
+                                if(abs(A*i+B*j+C*k+D)<1)
+                                    img(j,img.height() - k) = cur.c;
+                            }
+                        }
+                    return;
                 }
-              }
-              //plano xz
-              if(y1==y2)return;
-              for(int i=x1;i<x2;i++)
-              {
-                for(int j=y1;j<y2;j++)
+
+                //perpendicular yz inclinado izq
                 {
-                  for(int k=z1;k<z2;k++)
-                  {
-                    if(abs(A*i+B*j+C*k+D)<1)
-                    img[2](i,img[1].height()-1-k)=cur.c;
-                  }
+                    // 2 significa abajo
+                    auto [p1, p2] = get_two_points_yz(cur, A, B, C, D);
 
+                    double y2_length = q.y - p2.y;
+                    double z2_length = z1;
+                    double bottom_line = sqrt(y2_length*y2_length + z2_length*z2_length);
+
+                    double y1_length = q.y - p1.y;
+                    double z1_length = z2;
+                    double top_line = sqrt(z1_length*z1_length + y1_length*y1_length);
+
+                    for(int i = x1; i < x2; ++i) {
+                        for(double j = bottom_line; j < top_line; j++) {
+                            img(i,j) = cur.c;
+                        }
+                    }
                 }
-              }
-
-
               return;
             }
 
