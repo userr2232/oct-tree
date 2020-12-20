@@ -54,13 +54,15 @@ int main(){
 
 
 Octree oc2("octree.dat");
-// oc2.get(40.0/512,0,1,-40);
-  oc2.get(0,0,1,-1);
+oc2.get(-15.0/512,0,1,0);
+// oc2.get(1,1,0,-512);
+
+  // oc2.get(0,0,1,-1);
   // oc2.get(0,0,1,-12);
 
     // ifstream f("texto.txt");
     // while(!f.eof())
-    // {
+    // {x
     //   getline(f,s);
     //   if(s.size()==0)break;
     //   v_img.push_back(CImg<float>(string("1/"+s).c_str()));

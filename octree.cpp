@@ -119,7 +119,7 @@ class Octree {
 
         }
 
-       void find_nodes(Node& cur,float A,float B,float C,float D,CImg<float>& img)
+       void find_nodes(Node& cur,float A,float B,float C,float D,vector<CImg<float>>& img)
         // void find_nodes(Node& cur,float A,float B,float C,float D,CImg<float>& img)
 
         {
@@ -158,6 +158,7 @@ class Octree {
 
             if(cur.c!=-1 )
             {
+              //plano xy
               if(z1==z2)return;
               for(int i=x1;i<x2;i++)
               {
@@ -166,11 +167,42 @@ class Octree {
                   for(int k=z1;k<z2;k++)
                   {
                     if(abs(A*i+B*j+C*k+D)<1)
-                    img(i,j)=cur.c;
+                    img[0](i,j)=cur.c;
                   }
 
                 }
               }
+
+              //plano yz
+              if(x1==x2)return;
+              for(int i=x1;i<x2;i++)
+              {
+                for(int j=y1;j<y2;j++)
+                {
+                  for(int k=z1;k<z2;k++)
+                  {
+                    if(abs(A*i+B*j+C*k+D)<1)
+                    img[1](j,img[1].height()-1-k)=cur.c;
+                  }
+
+                }
+              }
+              //plano xz
+              if(y1==y2)return;
+              for(int i=x1;i<x2;i++)
+              {
+                for(int j=y1;j<y2;j++)
+                {
+                  for(int k=z1;k<z2;k++)
+                  {
+                    if(abs(A*i+B*j+C*k+D)<1)
+                    img[2](i,img[1].height()-1-k)=cur.c;
+                  }
+
+                }
+              }
+
+
               return;
             }
 
@@ -201,35 +233,20 @@ class Octree {
             CImg<float>img(b.width(),b.height());
             vector<CImg<float>>imgs;
 
-            for(int i=0;i<41;i++)
+            for(int i=0;i<3;i++)
             {
                 imgs.push_back(img);
             }
 
             root=read(0);
             //cout<<b.width()<<" "<<b.height();
-            find_nodes(root,A,B,C,D,img);
+            find_nodes(root,A,B,C,D,imgs);
             // imgs[0].save("Result1.BMP");
             // imgs[1].save("Result2.BMP");
             // imgs[2].save("Result3.BMP");
-
-            // /*
-            for(auto im:imgs)
-            {
-                for(int i=0;i<im.width();i++)
-                {
-                    for(int j=0;j<im.height();j++)
-                    {
-                        if(im(i,j)!=0)
-                        {
-                            img(i,j)=im(i,j);
-                        }
-                    }
-
-                }
-            }
-            // */
-            img.save("prueba.BMP");
+            imgs[0].save("xy.BMP");
+            imgs[1].save("yz.BMP");
+            imgs[2].save("xz.BMP");
 
         }
 };
