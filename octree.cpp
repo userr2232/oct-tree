@@ -120,16 +120,6 @@ class Octree {
             return (D - A*x - C*z) / B;
         }
 
-//        pair<Point, Point> get_two_points_yz(Node& cur, float A, float B, float C, float D) {
-//            double x2{cur.x2}, x1{cur.x1}, y1{cur.y1}, y2{cur.y2}, z1{cur.z1}, z2{cur.z2};
-//            pair<Point, Point> v = {
-//                    {x2, solve_y(A, B, C, D, cur.x2, cur.z2), z2},
-//                    {x2, solve_y(A, B, C, D, x2, z1), z1}
-//            };
-//            return v;
-//        }
-
-
 
         bool is_parallel(float A, float B, float C ,float D) {
             vector<float> v = {A, B, C};
@@ -142,18 +132,21 @@ class Octree {
 
         void find_nodes(Node& cur, float A, float B, float C, float D, CImg<float>& img) {
             if(is_parallel(A, B, C ,D))
-                return find_nodes(cur, A, B, C, D, img, {}, {});
+            {
+                Point p,q;
+                return find_nodes(cur, A, B, C, D, img, p, q);
+            }
             if(is_perpendicular({A, B, C}, {0, 1, 0})) { // xz
                 auto [p, q] = get_points_xz(cur, A, B, C, D);
-                return find_nodes(cur, A, B, C, D, p, q);
+                return find_nodes(cur, A, B, C, D,img, p, q);
             }
             if(is_perpendicular({A, B, C}, {0, 0, 1})) { //xy
                 auto [p, q] = get_points_xy(cur, A, B, C, D);
-                return find_nodes(cur, A, B, C, D, p, q);
+                return find_nodes(cur, A, B, C, D,img, p, q);
             }
             // yz
             auto [p, q] = get_points_yz(cur, A, B, C, D);
-            return find_nodes(cur, A, B, C, D, p, q);
+            return find_nodes(cur, A, B, C, D,img, p, q);
         }
 
         bool is_in_plane(int x, int y, int z, float A, float B, float C, float D) {
@@ -181,7 +174,13 @@ class Octree {
         }
 
         pair<Point,Point> get_points_xz(Node &cur, float A, float B, float C, float D) {
-            int x1{cur.x1}, y1{cur.y1};
+            double x1=cur.x1;
+            double x2=cur.x2;
+            double y1=cur.y1;
+            double y2=cur.y2;
+            double z1=cur.z1;
+            double z2=cur.z2;
+
             vector<Point> v;
 
             for(int z = z1; z < z2; ++z) {
@@ -198,7 +197,7 @@ class Octree {
                 }
             }
 
-            for(int x = x1; i < x2; ++x) {
+            for(int x = x1; x < x2; ++x) {
                 if(is_in_plane(x, y1, z1, A, B, C, D)) {
                     v.push_back(Point{x,y1,z1});
                     break;
@@ -337,8 +336,8 @@ class Octree {
 
               //plano xy
               if(z1==z2)return;
-              if(A == 0 && B == 0) {
-                  for(int i=x1;i<x2;i++)
+              if((A == 0 && B == 0) || is_perpendicular({A, B, C}, {0, 1, 0})) {
+                    for(int i=x1;i<x2;i++)
                   {
                       for(int j=y1;j<y2;j++)
                       {
@@ -367,62 +366,52 @@ class Octree {
                     return;
                 }
 
+                if(is_perpendicular({A, B, C}, {1, 0, 0}))
+                {
+                  for(int j=y1;j<y2;j++)
+                  {
+                    for(int i=x1;i<x2;i++)
+                    {
+                      for(int k=z1;k<z2;k++)
+                      {
+                        if(abs(A*i+B*j+C*k+D)<1)
+                        img(i,j)=cur.c;
 
-                if(is_perpendicular({A, B, C}, {0, 1, 0})){ //xz
-                    auto [p1, p2] = get_points_xz(cur, A, B, C, D);
-                    Point top, bottom;
-                    if(p1.z1 > p2.z1) {
-                        top = p1;
-                        bottom = p2;
-                    } else {
-                        top = p2;
-                        bottom = p1;
-                    }
-                    Point back, front;
-                    if(p.x1 < q.x1) {
-                        back = p;
-                        front = q;
-                    } else {
-                        back = q;
-                        front = p;
-                    }
-                    if(top.x1 < bottom.x1) {
-                        double yp_bottom = sqrt((front.x1 - bottom.x1)*(front.x1 - bottom.x1) + (z1*z1));
-                        double yp_top = sqrt((front.x1 - top.x1)*(front.x1 - top.x1) + (z2*z2));
-                        for(int i = y1; i < y2; ++i) {
-                            for(double j = yp_bottom; j < yp_top; ++j) {
-                                img(i, int(j)) = cur.c;
-                            }
-                        }
-                    }
-                    else {
-                        double yp_bottom = sqrt((back.x1 - bottom.x1)*(back.x1 - bottom.x1) + (z1*z1));
-                        double yp_top = sqrt((back.x1 - top.x1)*(back.x1 - top.x1) + (z2*z2));
-                        for(int i = y1; i < y2; ++i) {
-                            for(double j = yp_bottom; j < yp_top; ++j) {
-                                img(i, int(j)) = cur.c;
-                            }
-                        }
+                      }
+
+
                     }
 
-                    // 2 significa abajo
-//                    auto [p1, p2] = get_two_points_yz(cur, A, B, C, D);
-//
-//                    double y2_length = q.y - p2.y;
-//                    double z2_length = z1;
-//                    double bottom_line = sqrt(y2_length*y2_length + z2_length*z2_length);
-//
-//                    double y1_length = q.y - p1.y;
-//                    double z1_length = z2;
-//                    double top_line = sqrt(z1_length*z1_length + y1_length*y1_length);
-//
-//                    for(int i = x1; i < x2; ++i) {
-//                        for(double j = bottom_line; j < top_line; j++) {
-//                            img(i,j) = cur.c;
-//                        }
-//                    }
+                  }
+                  return;
+
                 }
+
+                if(is_perpendicular({A, B, C}, {0, 0, 1}))
+                {
+                  for(int i=x1;i<x2;i++)
+                  {
+                      for(int j=y1;j<y2;j++)
+                      {
+                          for(int k=z1;k<z2;k++)
+                          {
+                              if(abs(A*i+B*j+C*k+D)<1)
+                              {
+                                // cout<<i<<" "<<j<<" "<<k<<" -> "<<abs(A*i+B*j+C*k+D)<<endl;
+
+                                  img(i,img.height()-1-k)=cur.c;
+                              }
+                          }
+
+                      }
+                  }
+                  return;
+                }
+
+
+
                 return;
+
             }
 
 
@@ -458,7 +447,7 @@ class Octree {
         }
         void get(float A,float B,float C,float D)
         {
-            CImg<float> b("1.BMP");
+            CImg<float> b("1.BMP");//Para tamaños por defecto
             CImg<float>img(b.width()*2,b.height()*2);
             vector<CImg<float>>imgs;
 
@@ -468,14 +457,7 @@ class Octree {
             }
 
             root=read(0);
-            //cout<<b.width()<<" "<<b.height();
             find_nodes(root,A,B,C,D,img);
             img.save("Result.BMP");
-            // imgs[1].save("Result2.BMP");
-            // imgs[2].save("Result3.BMP");
-            // imgs[0].save("xy.BMP");
-            // imgs[1].save("yz.BMP");
-            // imgs[2].save("xz.BMP");
-
         }
 };
