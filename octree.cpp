@@ -134,7 +134,7 @@ class Octree {
             find_nodes(cur, A, B, C, D, img, p1, p2);
         }
 
-       void find_nodes(Node& cur,float A,float B,float C,float D, CImg<float>& img, Point p, Point q)
+       void find_nodes(Node& cur,float A,float B,float C,float D, CImg<float>& img, Point& p, Point&  q)
        {
             double x1=cur.x1;
             double x2=cur.x2;
@@ -180,11 +180,16 @@ class Octree {
                             for(int k=z1;k<z2;k++)
                             {
                                 if(abs(A*i+B*j+C*k+D)<1)
+                                {
+                                  // cout<<i<<" "<<j<<" "<<k<<" -> "<<abs(A*i+B*j+C*k+D)<<endl;
+
                                     img(i,img.height()-1-k)=cur.c;
+                                }
                             }
 
                         }
                     }
+                    return;
                 }
 
               //plano xy
@@ -212,14 +217,22 @@ class Octree {
                         for(int j = y1; j < y2; ++j) {
                             for(int k = z1; k < z2; ++k) {
                                 if(abs(A*i+B*j+C*k+D)<1)
-                                    img(j,img.height() - k) = cur.c;
+                                    img(j,img.height()-1 - k) = cur.c;
                             }
                         }
+
                     return;
                 }
 
-                //perpendicular yz inclinado izq
+
+                    //perpendicular yz inclinado izq
+                Point a{A,B,C};
+                Point b{0,1,0};
+
+
                 {
+
+
                     // 2 significa abajo
                     auto [p1, p2] = get_two_points_yz(cur, A, B, C, D);
 
@@ -237,16 +250,26 @@ class Octree {
                         }
                     }
                 }
-              return;
+                return;
             }
 
 
             for(int i=0;i<8;i++)
             {
-              auto a=read(cur.children[i]);
-              find_nodes(a, A, B, C, D,img);
+              auto child=read(cur.children[i]);
+              find_nodes(child, A, B, C, D,img,p,q);
             }
 
+        };
+
+        double producto_punto(Point p,Point v)
+        {
+          return p.x*v.x+p.y*v.y+p.z*v.z;
+        }
+
+        bool is_perpendicular(Point p,Point v)
+        {
+          return producto_punto(p,v)<0.05;
         }
 
 
@@ -263,8 +286,8 @@ class Octree {
         }
         void get(float A,float B,float C,float D)
         {
-            CImg<float> b("p1.BMP");
-            CImg<float>img(b.width(),b.height());
+            CImg<float> b("1.BMP");
+            CImg<float>img(b.width()*2,b.height()*2);
             vector<CImg<float>>imgs;
 
             for(int i=0;i<3;i++)
@@ -274,85 +297,13 @@ class Octree {
 
             root=read(0);
             //cout<<b.width()<<" "<<b.height();
-            find_nodes(root,A,B,C,D,imgs);
-            // imgs[0].save("Result1.BMP");
+            find_nodes(root,A,B,C,D,img);
+            img.save("Result.BMP");
             // imgs[1].save("Result2.BMP");
             // imgs[2].save("Result3.BMP");
-            imgs[0].save("xy.BMP");
-            imgs[1].save("yz.BMP");
-            imgs[2].save("xz.BMP");
+            // imgs[0].save("xy.BMP");
+            // imgs[1].save("yz.BMP");
+            // imgs[2].save("xz.BMP");
 
         }
 };
-
-Node read(long dir)
-{
-    ifstream save_file("octree.dat");
-    save_file.seekg(dir);
-    Node node{};
-    save_file.read((char*)(&node),sizeof(Node));
-    save_file.close();
-    return node;
-}
-void go(Node n, vector<CImg<float>>& v)
-{
-    if(n.c!=-1)
-    {
-        for(long i = n.x1; i < n.x2; ++i) {
-        for(long j = n.y1; j < n.y2; ++j) {
-            for(long k = n.z1; k < n.z2; ++k) {
-                v[k](i,j)=n.c;
-            }
-        }
-    }
-    }
-    else
-    {
-        for(int i=0;i<8;i++)
-        go(read(n.children[i]),v);
-    }
-
-
-}
-
-void read()
-{
-    cout<<"hola"<<endl;
-  vector<CImg<float>> v;
-  CImg<float> b("p1.BMP");
-  CImg<float> a(b.width(),b.height());
-  v.push_back(a);
-  v.push_back(a);
-  v.push_back(a);
-
-
-  ifstream f("octree.dat");
-  Node n;
-  f.read((char*)(&n),sizeof(Node));
-  go(n,v);
-  /*
-  while(!f.eof())
-  {
-    f.read((char*)(&n),sizeof(Node));
-    cout<<n.children[0]<<" "<<n.c<<endl;
-
-
-    // cout<<n.x1<<" "<<n.y1<<" "<<n.z1<<" "<<n.x2<<" "<<n.y2<<" "<<n.z2<<endl;
-
-    if(n.c==-1) continue;
-    for(long i = n.x1; i < n.x2; ++i) {
-        for(long j = n.y1; j < n.y2; ++j) {
-            for(long k = n.z1; k < n.z2; ++k) {
-                v[k](i,j)=n.c;
-            }
-        }
-    }
-  }
-
-  */
-
-
-  v[0].save("1.BMP");
-  v[1].save("2.BMP");
-  v[2].save("3.BMP");
-}

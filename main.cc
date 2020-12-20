@@ -55,6 +55,10 @@ int main(){
 
 Octree oc2("octree.dat");
 oc2.get(-15.0/512,0,1,0);
+// oc2.get(0,0,1,-5);
+// oc2.get(1,0,0,-200);
+
+
 // oc2.get(1,1,0,-512);
 
   // oc2.get(0,0,1,-1);
