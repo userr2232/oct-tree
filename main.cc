@@ -18,7 +18,9 @@ vector<CImg<float>>v_img;
 int main(){
 
 
-Octree oc2("octree.dat");
+// Octree oc2("octree.dat"."texto.txt"); //"texto.txt" es el archivo donde estan las direcciones de todas las imagenes que seran parte del cubo
+
+Octree oc2("octree.dat"); //Una vez ya esta creado el octree
 // oc2.get(0.5,1,0,-200,"img.BMP");
 
 
