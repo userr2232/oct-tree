@@ -476,4 +476,39 @@ class Octree {
             find_nodes(root,A,B,C,D,img);
             img.save(name.c_str());
         }
+
+        void get_brute(float A, float B, float C, float D, vector<CImg<float>>& imgs, std::string name)
+        {
+            if(!imgs.size()) return;
+            auto width = imgs[0].width();
+            auto height = imgs[0].height();
+            CImg<float> img(width, height);
+            for(int i = 0; i < width; ++i) {
+                for(int j = 0; j < height; ++j) {
+                    for(int k = 0; k < imgs.size(); ++k) {
+                        if(std::abs(A*i + B*j + C*k + D) < 0.5) {
+                            if(A == 0 && C == 0) {
+                                img(i,img.height()-1-k) = imgs[k](i, j);
+                            }
+                            else if(A == 0 && B == 0) {
+                                img(i, j) = imgs[k](i, j);
+                            }
+                            else if(B == 0 && C == 0) {
+                                img(j,img.height()-1 - k) = imgs[k](i, j);
+                            }
+                            else if(is_perpendicular({A, B, C}, {1, 0, 0})) {
+                                img(i, j) = imgs[k](i, j);
+                            }
+                            else if(is_perpendicular({A, B, C}, {0, 0, 1})) {
+                                img(i, img.height()-1-k) = imgs[k](i, j);
+                            }
+                            else if(is_perpendicular({A, B, C}, {0, 1, 0})) {
+                                img(i, j) = imgs[k](i, j);
+                            }
+                        }
+                    }
+                }
+            }
+            img.save(name.c_str());
+        }
 };
