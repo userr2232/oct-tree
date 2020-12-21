@@ -336,7 +336,7 @@ class Octree {
 
               //plano xy
               if(z1==z2)return;
-              if((A == 0 && B == 0) || is_perpendicular({A, B, C}, {0, 1, 0})) {
+              if((A == 0 && B == 0)) {
                     for(int i=x1;i<x2;i++)
                   {
                       for(int j=y1;j<y2;j++)
@@ -407,6 +407,22 @@ class Octree {
                   }
                   return;
                 }
+                if(is_perpendicular({A, B, C}, {0, 1, 0}))
+                {
+                  for(int i=x1;i<x2;i++)
+                {
+                    for(int j=y1;j<y2;j++)
+                    {
+                        for(int k=z1;k<z2;k++)
+                        {
+                            if(abs(A*i+B*j+C*k+D)<1)
+                                img(i,j)=cur.c;
+                        }
+
+                    }
+                }
+                return;
+                }
 
 
 
@@ -445,10 +461,10 @@ class Octree {
 
             build(fnames);
         }
-        void get(float A,float B,float C,float D)
+        void get(float A,float B,float C,float D,std::string name)
         {
             CImg<float> b("1.BMP");//Para tamaños por defecto
-            CImg<float>img(b.width()*2,b.height()*2);
+            CImg<float>img(b.width(),b.height());
             vector<CImg<float>>imgs;
 
             for(int i=0;i<3;i++)
@@ -458,6 +474,6 @@ class Octree {
 
             root=read(0);
             find_nodes(root,A,B,C,D,img);
-            img.save("Result.BMP");
+            img.save(name.c_str());
         }
 };
